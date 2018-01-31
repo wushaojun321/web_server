@@ -1,9 +1,10 @@
-#encoding:utf8
+# encoding:utf8
 """
 使用socket访问网页，获取响应
 """
 import socket
 import ssl
+
 
 def parse_url(url):
     '''传入url，返回协议，端口，域名，访问路径
@@ -12,8 +13,8 @@ def parse_url(url):
     '''
     protocol = 'http'
     protdict = {
-        'http':80,
-        'https':443,
+        'http': 80,
+        'https': 443,
     }
     if url[:8] == 'https://':
         protocol = 'https'
@@ -30,7 +31,8 @@ def parse_url(url):
         h = host.split(':')
         host = h[0]
         port = int(h[1])
-    return protocol,  host, port, path
+    return protocol, host, port, path
+
 
 def test_parse_url():
     """
@@ -55,6 +57,7 @@ def test_parse_url():
         e = "parse_url ERROR, ({}) ({}) ({})".format(url, u, expected)
         assert u == expected, e
 
+
 def create_socket(protocol):
     '''
     根据protocol的值决定返回的是普通的socket对象还是ssl加密后的socket对象
@@ -65,16 +68,18 @@ def create_socket(protocol):
     if protocol == 'https':
         return ssl.wrap_socket(s)
 
+
 def create_request(host, path):
     request = 'GET {} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n'.format(path, host)
     return request
+
 
 def parse_response(response):
     """
     :param response:
     :return: 状态码、响应头、body
     """
-    header,body = response.split('\r\n\r\n', 1)
+    header, body = response.split('\r\n\r\n', 1)
     h = header.split('\r\n')
     status_code = h[0].split()[1]
     status_code = int(status_code)
@@ -83,7 +88,6 @@ def parse_response(response):
         k, v = line.split(': ')
         headers[k] = v
     return status_code, headers, body
-
 
 
 def get(url):
@@ -111,11 +115,7 @@ def get(url):
     status_code, headers, body = parse_response(response)
 
 
-
 if __name__ == '__main__':
-
     url = 'http://www.cnblogs.com/aylin/p/5572104.html'
     response = get(url)
-    print
     # test_parse_url()
-
