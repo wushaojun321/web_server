@@ -113,7 +113,7 @@ def get(url):
         if len(r) == 0:
             break
     status_code, headers, body = parse_response(response)
-
+    print status_code, headers, body[:100]
 
 if __name__ == '__main__':
     url = 'http://www.cnblogs.com/aylin/p/5572104.html'
