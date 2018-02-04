@@ -9,10 +9,12 @@
     4、返回response
 """
 import socket
-import time
 import urllib
 
+
 from routes import route_dict, handle_404
+
+
 
 
 class Request(object):
@@ -21,6 +23,7 @@ class Request(object):
         self.path = ''
         self.query = {}
         self.body = ''
+        self.headers = {}
 
     def form(self):
         post_form = {}
@@ -29,6 +32,17 @@ class Request(object):
                 x, y = i.split('=', 1)
                 post_form[urllib.unquote(x)] = urllib.unquote(y)
         return post_form
+
+    def cookies(self):
+        res = {}
+        str_cookies = self.headers.get('Cookie', '')
+        if str_cookies:
+            list_cookies = str_cookies.split('; ')
+            for i in list_cookies:
+                k, v = i.split('=')
+                res[k] = v
+        return res
+
 
 
 def parse_request(request):
@@ -51,8 +65,8 @@ def parse_request(request):
             for i in q.split('&'):
                 if '=' in i:
                     x, y = i.split('=', 1)
+                    #这里需要对query里面的数据进行解码，如%20->&
                     query[urllib.unquote(x)] = urllib.unquote(y)
-    print method, path, headers, query, body
     return method, path, headers, query, body
 
 
@@ -72,6 +86,7 @@ def run(host, port):
     s = socket.socket()
     s.bind((host, port))
     while True:
+        """无线循环接收HTTP请求"""
         s.listen(5)
         connection, addr = s.accept()
         r = ''
@@ -84,11 +99,11 @@ def run(host, port):
         if len(r.split('\r\n')) < 2:
             continue
         print '*'*50
-        print len(r)
         print '原始请求：{}'.format(r)
         print '*' * 50
+        #获取request实例，并将请求内容解析后传给request实例
         request = Request()
-        request.Method , request.path, request.header, request.query, request.body = parse_request(r)
+        request.Method , request.path, request.headers, request.query, request.body = parse_request(r)
         response = get_response(request)
         print '响应：\n' + response
         connection.sendall(response)
