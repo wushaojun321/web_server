@@ -8,13 +8,14 @@
     3、根据请求构造response
     4、返回response
 """
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
+
 import socket
 import urllib
 
-
 from routes import route_dict, handle_404
-
-
 
 
 class Request(object):
@@ -42,7 +43,6 @@ class Request(object):
                 k, v = i.split('=')
                 res[k] = v
         return res
-
 
 
 def parse_request(request):

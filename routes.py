@@ -1,10 +1,13 @@
 #encoding:utf8
-from model.user import User
-from model.todo import Todo
-from model import save
 import random
 
+from model.user import User
+from model.todo import Todo
+from utils import template
 
+import sys
+reload(sys)
+sys.setdefaultencoding('utf8')
 
 session = {}
 
@@ -50,17 +53,6 @@ def create_session():
     return res
 
 
-
-def template(name, keyword=None):
-    with open('templates/'+name) as f:
-        res = f.read()
-    if keyword:
-        res = res.format(**keyword)
-    print 'tttttt'*50
-    print res
-    return res
-
-
 def handle_404():
     """
     返回404响应的response
@@ -80,11 +72,9 @@ def index_route(request):
     if user:
         username = user.username
     else:
-        username = u'【游客】'
+        username = u'asd'
     header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:Close\r\n'
-    body = template('index.html', {
-        'username': username.encode('utf8'),
-    })
+    body = template('index.html', username= username)
     r = header + '\r\n' + body
     return r
 
@@ -136,9 +126,7 @@ def login_route(request):
             my_word = '登录失败'
             header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:Close\r\n'
             body = template('login_success.html',
-                            {
-                                'my_word':my_word,
-                            })
+                            my_word = my_word,)
             r = header + '\r\n' + body
             return r
 
@@ -153,10 +141,7 @@ def todo_route(request):
         user = current_user(request)
         todo_models = Todo.find(user_id=user.id)
         header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:Close\r\n'
-        body_li = '<h2>{}:{}<a href="todo/update?id={}">编辑</a>|||<a href="todo/delete?id={}">删除</a></h2>'
-        body_list = [body_li.format(model.id, model.content.encode('utf8'), model.id, model.id,) for model in todo_models]
-        body = ''.join(body_list)
-        body = template('todo.html', {'body':body})
+        body = template('todo.html', todo_models = todo_models)
         r = header + '\r\n' + body
         return r
 
@@ -219,17 +204,23 @@ def delete_todo(request):
         return redirect('/todo')
 
 
+@login_required
+def logout_route(request):
+    if request.Method == 'GET':
+        session.clear()
+        return redirect('/login')
 
 
 #path到route的映射
 route_dict = {
-    '/404':handle_404,
+    '/404': handle_404,
     '/': index_route,
-    '/login':login_route,
-    '/reg':register,
-    '/secret':secret_route,
-    '/todo':todo_route,
-    '/todo/add':add_todo,
-    '/todo/update':edit_todo,
-    '/todo/delete':delete_todo,
+    '/login': login_route,
+    '/logout': logout_route,
+    '/reg': register,
+    '/secret': secret_route,
+    '/todo': todo_route,
+    '/todo/add': add_todo,
+    '/todo/update': edit_todo,
+    '/todo/delete': delete_todo,
 }

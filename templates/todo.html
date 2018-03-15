@@ -5,7 +5,9 @@
 </head>
 <body>
 <h1>TODO</h1>
-{body}
+{% for model in todo_models %}
+<h2>{{ model.id }}:{{ model.content }}<a href="todo/update?id={{ model.id }}">编辑</a>|||<a href="todo/delete?id={{ model.id }}">删除</a></h2>
+{% endfor %}
 <form action="/todo/add", method="post">
     <input type="text" name="content">
         <button type="submit">添加</button>
