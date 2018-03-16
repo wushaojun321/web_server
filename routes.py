@@ -1,67 +1,11 @@
 #encoding:utf8
-import random
-
 from model.user import User
 from model.todo import Todo
-from utils import template
+from utils import template, handle_404, create_session, redirect, login_required, current_user, session
 
 import sys
 reload(sys)
 sys.setdefaultencoding('utf8')
-
-session = {}
-
-def current_user(request):
-    """
-    传入request对象，返回在线用户的model的实例，如果没有，返回None
-    """
-    cookies = request.cookies()
-    r_session = cookies.get('username', None)
-    if r_session:
-        username = session.get(r_session, None)
-        user = User.find_by(username)
-        if user:
-            return user
-    return None
-
-
-def login_required(func):
-    """判断用户是否登录的"""
-    def wrap(request):
-        print '你没有登录，你还想干嘛？？？'
-        user = current_user(request)
-        if not user:
-            return redirect('/login')
-        return func(request)
-    return wrap
-
-
-def redirect(url, cookies=None):
-    print '正在重定向~'
-    if not cookies:
-        header = 'HTTP/1.1 302 OK\r\nLocation: {}\r\n\r\n'.format(url)
-    else:
-        header = 'HTTP/1.1 302 OK\r\nLocation: {}\r\nSet-Cookie: username={}\r\n\r\n'.format(url, cookies)
-    return header
-
-
-def create_session():
-    res = ''
-    s = 'fdsgfkjlofijgfdlk214543532fdsf87dsgfui'
-    for i in range(16):
-        res += s[random.randint(0, len(s)-1)]
-    return res
-
-
-def handle_404():
-    """
-    返回404响应的response
-    """
-    print '404函数被执行啦！'
-    header = 'HTTP/1.1 404 not found\r\nContent-Type: text/html\r\nConnection:Close\r\n'
-    body = '<h1>404</h1>'
-    r = header + '\r\n' + body
-    return r
 
 
 def index_route(request):
@@ -72,7 +16,7 @@ def index_route(request):
     if user:
         username = user.username
     else:
-        username = u'asd'
+        username = u'【游客】'
     header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:Close\r\n'
     body = template('index.html', username= username)
     r = header + '\r\n' + body
@@ -95,7 +39,7 @@ def register(request):
             else:
                 my_word = '用户名或密码格式不正确'
             header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:Close\r\n'
-            body = template('login_success.html', {'my_word':my_word})
+            body = template('login_success.html', my_word = my_word)
             r = header + '\r\n' + body
             return r
 
@@ -173,10 +117,7 @@ def edit_todo(request):
         if not t:
             return handle_404()
         header = 'HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nConnection:Close\r\n'
-        body = template('todo_update.html', {
-            'todo_id':t.id,
-            'todo_content':t.content.encode('utf8'),
-        })
+        body = template('todo_update.html', todo_id=t.id, todo_content=t.content.encode('utf8'),)
         r = header + '\r\n' + body
         return r
     if request.Method == 'POST':

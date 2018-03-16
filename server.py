@@ -17,7 +17,6 @@ import urllib
 
 from routes import route_dict, handle_404
 
-
 class Request(object):
     def __init__(self):
         self.Method = 'GET'
@@ -43,7 +42,6 @@ class Request(object):
                 k, v = i.split('=')
                 res[k] = v
         return res
-
 
 def parse_request(request):
     """
